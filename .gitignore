@@ -1,0 +1,11 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temp / Scratch files
+*.tmp
+*.bak
+scratch/
+scratch_*.js
+check_*.js
+test_*.js
