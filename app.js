@@ -1,6 +1,6 @@
 /**
  * DESIGN RANDOMIZER — CORE APPLICATION LOGIC
- * Высококачественный интерактивный генератор брифов для графических дизайнеров
+ * Минималистичный генератор дизайн-челленджей для графических дизайнеров
  */
 
 (function () {
@@ -8,7 +8,6 @@
 
   // Состояние приложения
   const state = {
-    selectedCategory: 'all',
     locked: {
       niche: false,
       mood: false,
@@ -36,7 +35,6 @@
     btnTheme: document.getElementById('btnTheme'),
     btnOpenHistory: document.getElementById('btnOpenHistory'),
     favCountBadge: document.getElementById('favCount'),
-    categoryTabs: document.getElementById('categoryTabs'),
     btnRandomizeAll: document.getElementById('btnRandomizeAll'),
     btnSaveFavorite: document.getElementById('btnSaveFavorite'),
     btnCopyBrief: document.getElementById('btnCopyBrief'),
@@ -50,27 +48,12 @@
     cardPalette: document.getElementById('cardPalette'),
     cardDeliverable: document.getElementById('cardDeliverable'),
 
-    // Поля Ниши
-    nicheCategoryBadge: document.getElementById('nicheCategoryBadge'),
+    // Поля данных
     nicheTitle: document.getElementById('nicheTitle'),
-    nicheDesc: document.getElementById('nicheDesc'),
-    nicheAudience: document.getElementById('nicheAudience'),
-
-    // Поля Настроения
-    moodKeywords: document.getElementById('moodKeywords'),
     moodName: document.getElementById('moodName'),
-    moodVibe: document.getElementById('moodVibe'),
-    moodFonts: document.getElementById('moodFonts'),
-
-    // Поля Названия
     brandName: document.getElementById('brandName'),
-    brandTagline: document.getElementById('brandTagline'),
-
-    // Поля Палитры
     paletteName: document.getElementById('paletteName'),
     paletteSwatches: document.getElementById('paletteSwatches'),
-
-    // Поля Задачи
     deliverableTitle: document.getElementById('deliverableTitle'),
     deliverableScope: document.getElementById('deliverableScope'),
 
@@ -88,7 +71,7 @@
   };
 
   // ---------------------------------------------------------------------------
-  // WEB AUDIO API ДЛЯ ТАКТИЛЬНЫХ ЗВУКОВ КЛИКА (Zero-dependencies, offline)
+  // WEB AUDIO API ДЛЯ ЗВУКОВ КЛИКА
   // ---------------------------------------------------------------------------
   let audioCtx = null;
   function playSound(type = 'click') {
@@ -126,8 +109,8 @@
         osc.stop(now + 0.08);
       } else if (type === 'success') {
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(523.25, now); // C5
-        osc.frequency.setValueAtTime(659.25, now + 0.05); // E5
+        osc.frequency.setValueAtTime(523.25, now);
+        osc.frequency.setValueAtTime(659.25, now + 0.05);
         gain.gain.setValueAtTime(0.1, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
         osc.start(now);
@@ -142,12 +125,12 @@
         osc.stop(now + 0.08);
       }
     } catch (e) {
-      // Audio context might be restricted before interaction
+      // Audio context may be restricted before interaction
     }
   }
 
   // ---------------------------------------------------------------------------
-  // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ВЫБОРКИ И РАНДОМА
+  // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
   // ---------------------------------------------------------------------------
   function getRandomItem(array) {
     if (!array || array.length === 0) return null;
@@ -159,21 +142,17 @@
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
-  // Генератор названий брендов (микс кураторских и процедурных)
+  // Генератор названий брендов (без слоганов)
   function generateBrandName() {
-    // 55% вероятность выбрать из кураторского списка, 45% сгенерировать процедурно
     if (Math.random() < 0.55 && DESIGN_DATA.curatedNames.length > 0) {
       const item = getRandomItem(DESIGN_DATA.curatedNames);
-      return { ...item };
+      return { name: item.name };
     }
 
-    // Процедурная генерация
     const gen = DESIGN_DATA.namingGenerator;
     const prefix = getRandomItem(gen.prefixes);
     const root = getRandomItem(gen.roots);
     const suffix = getRandomItem(gen.suffixes);
-    const tagStart = getRandomItem(gen.taglinesStart);
-    const tagEnd = getRandomItem(gen.taglinesEnd);
 
     let name = '';
     const style = Math.floor(Math.random() * 3);
@@ -185,17 +164,7 @@
       name = prefix + suffix;
     }
 
-    return {
-      name: name,
-      tagline: `${tagStart} ${tagEnd}`
-    };
-  }
-
-  function getAvailableNiches() {
-    if (state.selectedCategory === 'all') {
-      return DESIGN_DATA.niches;
-    }
-    return DESIGN_DATA.niches.filter(n => n.category === state.selectedCategory);
+    return { name: name };
   }
 
   // ---------------------------------------------------------------------------
@@ -205,8 +174,7 @@
     if (state.locked[fieldKey]) return;
 
     if (fieldKey === 'niche') {
-      const available = getAvailableNiches();
-      state.current.niche = getRandomItem(available);
+      state.current.niche = getRandomItem(DESIGN_DATA.niches);
       renderNiche();
     } else if (fieldKey === 'mood') {
       state.current.mood = getRandomItem(DESIGN_DATA.moods);
@@ -256,44 +224,24 @@
   }
 
   // ---------------------------------------------------------------------------
-  // РЕНДЕР КАРТОЧЕК
+  // РЕНДЕР КАРТОЧЕК (ТОЛЬКО СУТЬ БЕЗ ЛИШНИХ ОПИСАНИЙ)
   // ---------------------------------------------------------------------------
   function renderNiche() {
     const item = state.current.niche;
     if (!item) return;
-
-    const catObj = DESIGN_DATA.categories.find(c => c.id === item.category);
-    DOM.nicheCategoryBadge.textContent = catObj ? `${catObj.icon} ${catObj.name}` : item.category;
     DOM.nicheTitle.textContent = item.title;
-    DOM.nicheDesc.textContent = item.desc;
-    DOM.nicheAudience.textContent = item.audience;
   }
 
   function renderMood() {
     const item = state.current.mood;
     if (!item) return;
-
     DOM.moodName.textContent = item.name;
-    DOM.moodVibe.textContent = item.vibe;
-    DOM.moodKeywords.textContent = item.keywords ? item.keywords.replace(/,\s*/g, ' • ') : 'Стиль • Концепт';
-
-    // Рендер тегов шрифтов
-    DOM.moodFonts.innerHTML = '';
-    const fontList = item.fonts.split(',').map(f => f.trim());
-    fontList.forEach(font => {
-      const span = document.createElement('span');
-      span.className = 'font-tag';
-      span.textContent = font;
-      DOM.moodFonts.appendChild(span);
-    });
   }
 
   function renderName() {
     const item = state.current.name;
     if (!item) return;
-
     DOM.brandName.textContent = item.name;
-    DOM.brandTagline.textContent = item.tagline ? `«${item.tagline}»` : '';
   }
 
   function renderPalette() {
@@ -318,7 +266,7 @@
       `;
 
       swatch.addEventListener('click', () => {
-        copyToClipboard(col.hex, `Цвет ${col.hex} скопирован в буфер!`);
+        copyToClipboard(col.hex, `Цвет ${col.hex} скопирован!`);
       });
 
       DOM.paletteSwatches.appendChild(swatch);
@@ -383,7 +331,7 @@
     clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       DOM.toastNotice.classList.remove('show');
-    }, 2400);
+    }, 2200);
   }
 
   function copyToClipboard(text, successMsg = 'Скопировано в буфер!') {
@@ -391,7 +339,6 @@
       playSound('success');
       showToast(successMsg);
     }).catch(() => {
-      // Fallback
       const input = document.createElement('textarea');
       input.value = text;
       document.body.appendChild(input);
@@ -403,7 +350,7 @@
     });
   }
 
-  // Скопировать готовый структурированный бриф
+  // Скопировать готовый бриф
   function copyFullBrief() {
     const n = state.current.niche;
     const m = state.current.mood;
@@ -412,51 +359,39 @@
     const d = state.current.deliverable;
 
     let text = `✦ ДИЗАЙН-БРИФ И КОНЦЕПТ ПРОЕКТА ✦\n\n`;
-    text += `🏷️ БРЕНД: ${b.name}\n`;
-    if (b.tagline) text += `   Слоган: «${b.tagline}»\n\n`;
-
-    text += `🎯 НИША:\n   ${n.title}\n`;
-    text += `   Суть: ${n.desc}\n`;
-    text += `   Целевая аудитория: ${n.audience}\n\n`;
-
-    text += `🎭 СТИЛЬ & НАСТРОЕНИЕ:\n   ${m.name}\n`;
-    text += `   Вайб: ${m.vibe}\n`;
-    text += `   Шрифты: ${m.fonts}\n\n`;
-
+    text += `🏷️ БРЕНД: ${b.name}\n\n`;
+    text += `🎯 НИША: ${n.title}\n\n`;
+    text += `🎭 НАСТРОЕНИЕ & СТИЛЬ: ${m.name}\n\n`;
     text += `🎨 ЦВЕТОВАЯ ПАЛИТРА (${p.name}):\n`;
     p.colors.forEach(c => {
       text += `   • ${c.hex} — ${c.name} (${c.role})\n`;
     });
     text += `\n`;
-
     text += `📦 ЗАДАЧА & НОСИТЕЛИ:\n   ${d.title}\n`;
     text += `   Объем работ: ${d.scope}\n`;
 
-    copyToClipboard(text, 'Полный бриф скопирован для Notion / Figma!');
+    copyToClipboard(text, 'Бриф скопирован для Notion / Figma!');
   }
 
   // ---------------------------------------------------------------------------
-  // ЭКСПОРТ КАРТОЧКИ В PNG (HTML5 Canvas автономный рендеринг высокого разрешения)
+  // ЭКСПОРТ КАРТОЧКИ В PNG (ЧИСТЫЙ МИНИМАЛИСТИЧНЫЙ ДИЗАЙН)
   // ---------------------------------------------------------------------------
   function exportBriefAsImage() {
     playSound('click');
-    showToast('Генерация постера-карточки PNG...');
+    showToast('Генерация постера PNG...');
 
     const canvas = DOM.exportCanvas;
     const ctx = canvas.getContext('2d');
     
-    // Базовые параметры разрешения (2400px ширина)
     const W = 2400;
     const isDark = DOM.body.classList.contains('theme-dark');
     
-    // Параметры сетки колонок
     const col1X = 160;
     const col1W = 960;
     const dividerX = 1180;
     const col2X = 1240;
     const col2W = 980;
 
-    // Вспомогательная функция переноса текста по словам
     function getLines(text, maxWidth, font) {
       if (!text) return [];
       ctx.font = font;
@@ -478,39 +413,29 @@
       return lines;
     }
 
-    // Предварительный расчет высоты левой колонки
-    const nameLines = getLines(state.current.name.name, col1W, 'bold 70px "Syne", "Space Grotesk", sans-serif');
-    const taglineLines = state.current.name.tagline 
-      ? getLines(`«${state.current.name.tagline}»`, col1W, 'italic 28px Inter, sans-serif') 
-      : [];
-    const nicheTitleLines = getLines(state.current.niche.title, col1W, 'bold 36px "Space Grotesk", Inter, sans-serif');
-    const nicheDescLines = getLines(state.current.niche.desc, col1W, '26px Inter, sans-serif');
-    const audienceLines = getLines(state.current.niche.audience, col1W, '24px Inter, sans-serif');
+    // Расчет высоты левой колонки
+    const nameLines = getLines(state.current.name.name, col1W, 'bold 74px "Syne", "Space Grotesk", sans-serif');
+    const nicheTitleLines = getLines(state.current.niche.title, col1W, 'bold 38px "Space Grotesk", Inter, sans-serif');
 
-    let estLeftH = 320 + (nameLines.length * 78) + (taglineLines.length * 36) + 40 + 36;
-    estLeftH += (nicheTitleLines.length * 46) + 12 + (nicheDescLines.length * 36) + 24 + 28 + (audienceLines.length * 34);
+    let estLeftH = 320 + (nameLines.length * 82) + 50 + 38 + (nicheTitleLines.length * 48);
 
-    // Предварительный расчет высоты правой колонки
-    const moodNameLines = getLines(state.current.mood.name, col2W, 'bold 36px "Space Grotesk", Inter, sans-serif');
-    const moodVibeLines = getLines(state.current.mood.vibe, col2W, '26px Inter, sans-serif');
-    const fontLines = getLines(state.current.mood.fonts, col2W, 'bold 24px "JetBrains Mono", monospace');
+    // Расчет высоты правой колонки
     const delivTitleLines = getLines(state.current.deliverable.title, col2W, 'bold 32px "Space Grotesk", Inter, sans-serif');
     const delivScopeLines = getLines(state.current.deliverable.scope, col2W, '24px Inter, sans-serif');
 
-    let estRightH = 320 + 36 + (moodNameLines.length * 46) + 12 + (moodVibeLines.length * 36) + 20 + 28 + (fontLines.length * 34) + 40;
-    estRightH += 36 + (delivTitleLines.length * 42) + 12 + (delivScopeLines.length * 34);
+    let estRightH = 320 + 38 + 65 + 45 + 38 + (delivTitleLines.length * 42) + 12 + (delivScopeLines.length * 34);
 
-    // Динамический расчет высоты холста
+    // Высота холста
     const contentBottom = Math.max(estLeftH, estRightH);
-    const paletteSepY = Math.max(contentBottom + 45, 960);
+    const paletteSepY = Math.max(contentBottom + 50, 880);
     const swatchY = paletteSepY + 85;
     const swatchH = 175;
-    const H = Math.max(1450, swatchY + swatchH + 110);
+    const H = Math.max(1360, swatchY + swatchH + 110);
 
     canvas.width = W;
     canvas.height = H;
 
-    // Отрисовка фона
+    // Фон
     ctx.fillStyle = isDark ? '#0b0c10' : '#f4f5f8';
     ctx.fillRect(0, 0, W, H);
 
@@ -527,9 +452,9 @@
 
     ctx.fillStyle = isDark ? '#9ca3af' : '#6b7280';
     ctx.font = '26px Inter, sans-serif';
-    ctx.fillText('Креативный бриф айдентики и дизайн-концепта', 160, 218);
+    ctx.fillText('Креативный бриф айдентики и концепта', 160, 218);
 
-    // Разделительная линия под шапкой
+    // Разделительная линия
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -537,7 +462,6 @@
     ctx.lineTo(W - 160, 255);
     ctx.stroke();
 
-    // Функция отрисовки массива строк
     function drawLines(lines, x, startY, lineHeight, color, font) {
       ctx.fillStyle = color;
       ctx.font = font;
@@ -550,70 +474,37 @@
     }
 
     // === ЛЕВАЯ КОЛОНКА ===
-    let leftY = 330;
+    let leftY = 340;
 
     // Имя бренда
-    leftY = drawLines(nameLines, col1X, leftY, 78, isDark ? '#ffffff' : '#111827', 'bold 70px "Syne", "Space Grotesk", sans-serif');
+    leftY = drawLines(nameLines, col1X, leftY, 82, isDark ? '#ffffff' : '#111827', 'bold 74px "Syne", "Space Grotesk", sans-serif');
+    leftY += 50;
 
-    // Слоган
-    if (taglineLines.length > 0) {
-      leftY = drawLines(taglineLines, col1X, leftY - 10, 36, isDark ? '#9ca3af' : '#4b5563', 'italic 28px Inter, sans-serif');
-    }
-    leftY += 35;
-
-    // Заголовок ниши
-    const catObj = DESIGN_DATA.categories.find(c => c.id === state.current.niche.category);
-    const catName = catObj ? ` • ${catObj.name.toUpperCase()}` : '';
+    // 01 // НИША БИЗНЕСА
     ctx.fillStyle = '#818cf8';
     ctx.font = 'bold 22px Inter, sans-serif';
-    ctx.fillText(`01 // НИША БИЗНЕСА${catName}`, col1X, leftY);
+    ctx.fillText('01 // НИША БИЗНЕСА', col1X, leftY);
     leftY += 38;
 
-    // Название ниши (аккуратно перенесено)
-    leftY = drawLines(nicheTitleLines, col1X, leftY, 46, isDark ? '#f3f4f6' : '#111827', 'bold 36px "Space Grotesk", Inter, sans-serif');
-    leftY += 10;
-
-    // Описание ниши
-    leftY = drawLines(nicheDescLines, col1X, leftY, 36, isDark ? '#9ca3af' : '#4b5563', '26px Inter, sans-serif');
-    leftY += 20;
-
-    // Метка аудитории
-    ctx.fillStyle = isDark ? '#6b7280' : '#9ca3af';
-    ctx.font = 'bold 20px "JetBrains Mono", monospace';
-    ctx.fillText('ЦЕЛЕВАЯ АУДИТОРИЯ:', col1X, leftY);
-    leftY += 28;
-
-    // Текст аудитории
-    leftY = drawLines(audienceLines, col1X, leftY, 34, isDark ? '#d1d5db' : '#374151', '24px Inter, sans-serif');
+    // Название ниши (без лишних описаний)
+    leftY = drawLines(nicheTitleLines, col1X, leftY, 48, isDark ? '#f3f4f6' : '#111827', 'bold 38px "Space Grotesk", Inter, sans-serif');
 
     // === ПРАВАЯ КОЛОНКА ===
-    let rightY = 330;
+    let rightY = 340;
 
-    // Секция 02: Настроение и стиль
+    // 02 // НАСТРОЕНИЕ & СТИЛЬ
     ctx.fillStyle = '#ec4899';
     ctx.font = 'bold 22px Inter, sans-serif';
     ctx.fillText('02 // НАСТРОЕНИЕ & СТИЛЬ', col2X, rightY);
-    rightY += 38;
+    rightY += 45;
 
-    // Имя стиля
-    rightY = drawLines(moodNameLines, col2X, rightY, 46, isDark ? '#ffffff' : '#111827', 'bold 36px "Space Grotesk", Inter, sans-serif');
-    rightY += 10;
+    // Одно единственное слово настроения (крупно и выразительно)
+    ctx.fillStyle = '#ec4899';
+    ctx.font = 'bold 54px "Space Grotesk", sans-serif';
+    ctx.fillText(state.current.mood.name.toUpperCase(), col2X, rightY);
+    rightY += 75;
 
-    // Вайб стиля
-    rightY = drawLines(moodVibeLines, col2X, rightY, 36, isDark ? '#9ca3af' : '#4b5563', '26px Inter, sans-serif');
-    rightY += 18;
-
-    // Метка шрифтов
-    ctx.fillStyle = isDark ? '#6b7280' : '#9ca3af';
-    ctx.font = 'bold 20px "JetBrains Mono", monospace';
-    ctx.fillText('ШРИФТОВЫЕ ОРИЕНТИРЫ:', col2X, rightY);
-    rightY += 28;
-
-    // Список шрифтов
-    rightY = drawLines(fontLines, col2X, rightY, 34, '#6366f1', 'bold 24px "JetBrains Mono", monospace');
-    rightY += 38;
-
-    // Секция 03: Задача и носители
+    // 03 // ЗАДАЧА & ОБЪЕМ
     ctx.fillStyle = '#10b981';
     ctx.font = 'bold 22px Inter, sans-serif';
     ctx.fillText('03 // ЗАДАЧА & ОБЪЕМ', col2X, rightY);
@@ -626,7 +517,7 @@
     // Описание задачи
     rightY = drawLines(delivScopeLines, col2X, rightY, 34, isDark ? '#9ca3af' : '#4b5563', '24px Inter, sans-serif');
 
-    // Тонкий вертикальный разделитель между колонками
+    // Вертикальный разделитель
     const maxColY = Math.max(leftY, rightY);
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
     ctx.beginPath();
@@ -634,7 +525,7 @@
     ctx.lineTo(dividerX, maxColY);
     ctx.stroke();
 
-    // === РАЗДЕЛИТЕЛЬ И ПАЛИТРА СНИЗУ ===
+    // === ПАЛИТРА СНИЗУ ===
     ctx.strokeStyle = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)';
     ctx.beginPath();
     ctx.moveTo(160, paletteSepY);
@@ -646,27 +537,22 @@
     ctx.font = 'bold 26px "Space Grotesk", sans-serif';
     ctx.fillText(`ЦВЕТОВАЯ ПАЛИТРА: ${state.current.palette.name.toUpperCase()}`, 160, paletteSepY + 45);
 
-    // Отрисовка 5 цветовых плашек
     const swatchGap = 24;
     const swatchW = (W - 320 - (4 * swatchGap)) / 5;
 
     state.current.palette.colors.forEach((col, idx) => {
       const sx = 160 + idx * (swatchW + swatchGap);
       
-      // Фон подложки плашки
       ctx.fillStyle = isDark ? '#1f232f' : '#f3f4f6';
       roundRect(ctx, sx, swatchY, swatchW, swatchH, 16, true, false);
 
-      // Верхняя цветная часть плашки
       ctx.fillStyle = col.hex;
       roundRect(ctx, sx, swatchY, swatchW, swatchH - 75, 14, true, false);
 
-      // HEX-код
       ctx.fillStyle = isDark ? '#ffffff' : '#111827';
       ctx.font = 'bold 24px "JetBrains Mono", monospace';
       ctx.fillText(col.hex, sx + 14, swatchY + swatchH - 42);
 
-      // Название оттенка
       ctx.fillStyle = isDark ? '#9ca3af' : '#6b7280';
       ctx.font = '20px Inter, sans-serif';
       let colName = col.name;
@@ -686,11 +572,10 @@
       link.download = `brief-${safeName}.png`;
       link.href = canvas.toDataURL('image/png');
       link.click();
-      showToast(`Карточка brief-${safeName}.png сохранена! 🖼️`);
+      showToast(`Постер brief-${safeName}.png сохранен! 🖼️`);
     }, 100);
   }
 
-  // Вспомогательные функции отрисовки на Canvas
   function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
     ctx.beginPath();
     ctx.moveTo(x + radius, y);
@@ -707,25 +592,8 @@
     if (stroke) ctx.stroke();
   }
 
-  function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-    const words = text.split(' ');
-    let line = '';
-    for (let n = 0; n < words.length; n++) {
-      const testLine = line + words[n] + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && n > 0) {
-        ctx.fillText(line, x, y);
-        line = words[n] + ' ';
-        y += lineHeight;
-      } else {
-        line = testLine;
-      }
-    }
-    ctx.fillText(line, x, y);
-  }
-
   // ---------------------------------------------------------------------------
-  // ИЗБРАННОЕ И ИСТОРИЯ (LOCALSTORAGE)
+  // ИЗБРАННОЕ И ИСТОРИЯ
   // ---------------------------------------------------------------------------
   function loadStorage() {
     try {
@@ -813,7 +681,6 @@
     DOM.modalFavCount.textContent = state.favorites.length;
   }
 
-  // Восстановить концепт из истории или избранного
   function restoreConcept(concept) {
     state.current = JSON.parse(JSON.stringify(concept));
     renderNiche();
@@ -867,15 +734,14 @@
       const card = document.createElement('div');
       card.className = 'saved-item-card';
 
-      // Плашки палитры
       const swatchesHtml = c.palette.colors.map(col => `
         <span class="mini-swatch" style="background-color: ${col.hex};" title="${col.hex}"></span>
       `).join('');
 
       card.innerHTML = `
         <div class="saved-item-info">
-          <h4>${c.name.name} <span style="font-size: 0.8rem; font-weight: 400; color: var(--text-muted);">— ${c.niche.title}</span></h4>
-          <p>${c.mood.name} • ${c.deliverable.title}</p>
+          <h4>${c.name.name} <span style="font-size: 0.85rem; font-weight: 400; color: var(--text-muted);">— ${c.niche.title}</span></h4>
+          <p>Настроение: <strong>${c.mood.name}</strong> • ${c.deliverable.title}</p>
           <div class="saved-item-palette">
             ${swatchesHtml}
             <span style="font-size: 0.75rem; color: var(--text-dim); margin-left: 6px;">${c.palette.name}</span>
@@ -948,36 +814,10 @@
   }
 
   // ---------------------------------------------------------------------------
-  // ИНИЦИАЛИЗАЦИЯ И ОБРАБОТЧИКИ СОБЫТИЙ
+  // ОБРАБОТЧИКИ СОБЫТИЙ И СТАРТ
   // ---------------------------------------------------------------------------
-  function initCategories() {
-    DOM.categoryTabs.innerHTML = '';
-    DESIGN_DATA.categories.forEach(cat => {
-      const tab = document.createElement('button');
-      tab.className = `category-tab ${cat.id === state.selectedCategory ? 'active' : ''}`;
-      tab.innerHTML = `<span>${cat.icon}</span> <span>${cat.name}</span>`;
-      
-      tab.addEventListener('click', () => {
-        playSound('click');
-        state.selectedCategory = cat.id;
-        document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-
-        // Если ниша не залочена, перегенерировать под новую категорию
-        if (!state.locked.niche) {
-          randomizeField('niche');
-        }
-      });
-
-      DOM.categoryTabs.appendChild(tab);
-    });
-  }
-
   function initListeners() {
-    // Главная кнопка
     DOM.btnRandomizeAll.addEventListener('click', randomizeAll);
-
-    // Дополнительные кнопки
     DOM.btnSaveFavorite.addEventListener('click', toggleFavorite);
     DOM.btnCopyBrief.addEventListener('click', copyFullBrief);
     DOM.btnExportImage.addEventListener('click', exportBriefAsImage);
@@ -985,12 +825,10 @@
       copyToClipboard(state.current.name.name, `Название «${state.current.name.name}» скопировано!`);
     });
 
-    // Хедер
     DOM.btnSound.addEventListener('click', toggleSound);
     DOM.btnTheme.addEventListener('click', toggleTheme);
     DOM.btnOpenHistory.addEventListener('click', () => openModal('favorites'));
 
-    // Модалка
     DOM.btnCloseModal.addEventListener('click', closeModal);
     DOM.tabFavorites.addEventListener('click', () => {
       state.activeModalTab = 'favorites';
@@ -1005,7 +843,6 @@
       if (e.target === DOM.historyModal) closeModal();
     });
 
-    // Обработчики Lock и Reroll на карточках
     document.querySelectorAll('.lock-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const field = btn.getAttribute('data-field');
@@ -1021,9 +858,7 @@
       });
     });
 
-    // Горячие клавиши (Spacebar, Escape, etc.)
     window.addEventListener('keydown', (e) => {
-      // Игнорируем если фокус в инпуте или textarea
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.code === 'Space') {
@@ -1031,23 +866,18 @@
         randomizeAll();
       } else if (e.key === 'Escape') {
         closeModal();
-      } else if (e.code === 'KeyC' && (e.ctrlKey || e.metaKey)) {
-        // Стандартный копирует если выделен текст
       } else if (e.key === 's' || e.key === 'ы') {
         toggleFavorite();
       }
     });
   }
 
-  // Запуск приложения
   function init() {
     loadStorage();
-    initCategories();
     initListeners();
     randomizeAll();
   }
 
-  // Старт после загрузки DOM
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {

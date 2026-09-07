@@ -6,7 +6,7 @@
   <title>Design Brief Randomizer — Генератор идей для графдизайнеров</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;700;800&family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="theme-dark">
@@ -20,7 +20,7 @@
       </div>
       <div>
         <h1 class="app-title">DESIGN RANDOMIZER</h1>
-        <p class="app-subtitle">База креативных концептов, стилей и палитр для дизайнеров</p>
+        <p class="app-subtitle">Генератор дизайн-челленджей для графических дизайнеров</p>
       </div>
     </div>
 
@@ -62,15 +62,8 @@
     </div>
   </header>
 
-  <!-- СТРОКА ФИЛЬТРОВ И ГЛАВНОГО ДЕЙСТВИЯ -->
+  <!-- СТРОКА ДЕЙСТВИЙ (БЕЗ ВЫБОРА КАТЕГОРИЙ) -->
   <section class="control-panel">
-    <div class="filter-row">
-      <span class="filter-label">Категория:</span>
-      <div id="categoryTabs" class="category-tabs">
-        <!-- Генерируется из data.js -->
-      </div>
-    </div>
-
     <div class="action-bar">
       <!-- Главная кнопка рандомизации -->
       <button id="btnRandomizeAll" class="primary-action-btn">
@@ -119,7 +112,7 @@
   <!-- СЕТКА КАРТОЧЕК БРИФА -->
   <main class="brief-container" id="briefExportTarget">
     <!-- КАРТОЧКА 1: НИША -->
-    <article class="card field-card" id="cardNiche">
+    <article class="card field-card card-compact" id="cardNiche">
       <div class="card-header">
         <div class="field-meta">
           <span class="field-number">01</span>
@@ -144,22 +137,13 @@
         </div>
       </div>
 
-      <div class="card-body">
-        <div class="badge-row">
-          <span class="tag-badge category-badge" id="nicheCategoryBadge">Еда & Напитки</span>
-        </div>
-        <h2 class="niche-title field-highlight" id="nicheTitle">Крафтовая микро-обжарка спешелти кофе</h2>
-        <p class="niche-desc" id="nicheDesc">Прямой импорт зерен из Эфиопии и Колумбии, фокус на экспериментальной анаэробной ферментации.</p>
-        
-        <div class="audience-box">
-          <span class="sub-label">Целевая аудитория:</span>
-          <p class="audience-text" id="nicheAudience">Кофейные энтузиасты 22-38 лет, ценители авторского вкуса и домашней фильтр-культуры.</p>
-        </div>
+      <div class="card-body card-body-center">
+        <h2 class="niche-title field-highlight" id="nicheTitle">Сеть городских кофеен спешелти-кофе</h2>
       </div>
     </article>
 
-    <!-- КАРТОЧКА 2: НАСТРОЕНИЕ И СТИЛЬ -->
-    <article class="card field-card" id="cardMood">
+    <!-- КАРТОЧКА 2: НАСТРОЕНИЕ И СТИЛЬ (СТРОГО ОДНО СЛОВО) -->
+    <article class="card field-card card-compact" id="cardMood">
       <div class="card-header">
         <div class="field-meta">
           <span class="field-number">02</span>
@@ -176,7 +160,7 @@
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
             </svg>
           </button>
-          <button class="reroll-btn" data-field="mood" title="Случайно выбрать другой стиль">
+          <button class="reroll-btn" data-field="mood" title="Случайно выбрать другое настроение">
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"></path>
             </svg>
@@ -184,24 +168,13 @@
         </div>
       </div>
 
-      <div class="card-body">
-        <div class="badge-row">
-          <span class="tag-badge mood-badge" id="moodKeywords">Сетка • Контраст • Модернизм</span>
-        </div>
-        <h2 class="mood-title field-highlight" id="moodName">Швейцарский интернациональный стиль</h2>
-        <p class="mood-vibe" id="moodVibe">Строгая модульная сетка, чистая типографика (гротеск), асимметричная верстка, математическая ясность.</p>
-        
-        <div class="fonts-box">
-          <span class="sub-label">Шрифтовые ориентиры:</span>
-          <div class="font-tags" id="moodFonts">
-            <!-- Теги шрифтов -->
-          </div>
-        </div>
+      <div class="card-body card-body-center">
+        <div class="mood-single-display field-highlight" id="moodName">Игривый</div>
       </div>
     </article>
 
-    <!-- КАРТОЧКА 3: НАЗВАНИЕ И СЛОГАН -->
-    <article class="card field-card" id="cardName">
+    <!-- КАРТОЧКА 3: НАЗВАНИЕ БРЕНДА -->
+    <article class="card field-card card-compact" id="cardName">
       <div class="card-header">
         <div class="field-meta">
           <span class="field-number">03</span>
@@ -226,25 +199,21 @@
         </div>
       </div>
 
-      <div class="card-body">
-        <div class="brand-preview-wrapper">
-          <div class="brand-logo-display" id="brandName">Kroma</div>
-          <p class="brand-tagline" id="brandTagline">Цвет как язык восприятия</p>
-        </div>
-
-        <div class="brand-actions-bar">
+      <div class="card-body card-body-center">
+        <div class="brand-preview-simple">
+          <div class="brand-logo-display field-highlight" id="brandName">Kroma</div>
           <button class="copy-small-btn" id="btnCopyName" title="Скопировать название в буфер">
             <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
             </svg>
-            <span>Скопировать имя</span>
+            <span>Скопировать</span>
           </button>
         </div>
       </div>
     </article>
 
-    <!-- КАРТОЧКА 4: ЦВЕТОВАЯ ПАЛИТРА -->
+    <!-- КАРТОЧКА 4: ЦВЕТОВАЯ ПАЛИТРА (С ДЕТАЛЯМИ) -->
     <article class="card field-card palette-card-full" id="cardPalette">
       <div class="card-header">
         <div class="field-meta">
@@ -279,15 +248,15 @@
       </div>
     </article>
 
-    <!-- КАРТОЧКА 5 (БОНУС): ЗАДАЧА / НОСИТЕЛИ ДИЗАЙНА -->
-    <article class="card field-card deliverable-card" id="cardDeliverable">
+    <!-- КАРТОЧКА 5: ЗАДАЧА / НОСИТЕЛИ (С ДЕТАЛЯМИ) -->
+    <article class="card field-card deliverable-card-full" id="cardDeliverable">
       <div class="card-header">
         <div class="field-meta">
           <span class="field-number">05</span>
           <span class="field-title">ЗАДАЧА & НОСИТЕЛИ</span>
         </div>
         <div class="card-tools">
-          <button class="lock-btn" data-field="deliverable" title="Заблокировать носители">
+          <button class="lock-btn" data-field="deliverable" title="Заблокировать задачу">
             <svg class="icon-svg icon-unlocked" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 9.9-1"></path>
@@ -336,7 +305,7 @@
   <!-- ВСПЛЫВАЮЩИЙ TOAST С УВЕДОМЛЕНИЕМ -->
   <div class="toast" id="toastNotice" aria-live="polite">
     <span class="toast-icon">✓</span>
-    <span class="toast-text" id="toastMessage">Цвет #FF3B30 скопирован!</span>
+    <span class="toast-text" id="toastMessage">Цвет скопирован!</span>
   </div>
 
   <!-- СКРЫТЫЙ CANVAS ДЛЯ ЭКСПОРТА В PNG -->
